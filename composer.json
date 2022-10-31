@@ -1,0 +1,12 @@
+{
+	"name": "fuseboxy/fuseboxy-util-excel",
+	"description": "Fuseboxy Util (Excel)",
+	"license": "MIT",
+	"type": "fuseboxy-module",
+	"require": {
+		"fuseboxy/fuseboxy-installer": "2.2.x",
+		"phpoffice/phpspreadsheet" : "1.14.*",
+		"psr/log" : "1.1.*"
+	},
+	"autoload": { "files": [ "app/model/Util_Excel.php" ] }
+}
