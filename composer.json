@@ -1,5 +1,5 @@
 {
-	"name": "fuseboxy/fuseboxy-util-excel",
+	"name": "fuseboxy/fuseboxy-util-xls",
 	"description": "Fuseboxy Util (Excel)",
 	"license": "MIT",
 	"type": "fuseboxy-module",
@@ -8,5 +8,5 @@
 		"phpoffice/phpspreadsheet" : "1.14.*",
 		"psr/log" : "1.1.*"
 	},
-	"autoload": { "files": [ "app/model/Util_Excel.php" ] }
+	"autoload": { "files": [ "app/model/Util_XLS.php" ] }
 }
