@@ -37,7 +37,7 @@ class Util_XLS {
 						</structure>
 					</array>
 				</structure>
-				<string name="$filePath" comments="relative path to upload directory" />
+				<string name="$filePath" optional="yes" comments="relative path to upload directory; download directly when not specified" />
 				<structure name="$options">
 					<boolean name="showRecordCount" optional="yes" />
 					<structure name="columnWidth" optional="yes">
@@ -59,9 +59,9 @@ class Util_XLS {
 		</io>
 	</fusedoc>
 	*/
-	public static function array2xls($fileData, $filePath, $options=[]) {
+	public static function array2xls($fileData, $filePath=null, $options=[]) {
 		// fix swapped parameters
-		if ( is_string($fileData) and is_array($filePath) ) list($fileData, $filePath) = array($filePath, $fileData);
+		if ( isset($filePath) and is_string($fileData) and is_array($filePath) ) list($fileData, $filePath) = array($filePath, $fileData);
 		// mark start time
 		$startTime = microtime(true);
 		// validate library
@@ -83,9 +83,6 @@ class Util_XLS {
 				return false;
 			}
 		}
-		// determine output location
-		$result = array('path' => self::uploadDir($filePath), 'url'  => self::uploadUrl($filePath));
-		if ( $result['path'] === false or $result['url'] === false ) return false;
 		// create blank spreadsheet
 		$spreadsheet = new PhpOffice\PhpSpreadsheet\Spreadsheet();
 		// go through each worksheet
@@ -157,9 +154,35 @@ class Util_XLS {
 		$activeSheet->setTitle('et ('.$et.'ms)');
 		// focus first worksheet (when finished)
 		$spreadsheet->setActiveSheetIndex(0);
+		// determine output location
+		// ===> when file path not specified
+		// ===> output to temp file
+		if ( $filePath ) {
+			$result = array('path' => Util::uploadDir($filePath), 'url' => Util::uploadUrl($filePath));
+			if ( $result['path'] === false or $result['url'] === false ) {
+				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
+				return false;
+			}
+		} else {
+			$uuid = Util::uuid();
+			if ( $uuid === false ) {
+				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
+				return false;
+			}
+			$result = array('path' => $uuid.'.xls', 'url' => $uuid.'.xls');
+		}
 		// write to report
 		$writer = new PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 		$writer->save($result['path']);
+		// when file path not specified
+		// ===> download directly
+		if ( !$filePath ) {
+			$streamed = Util::streamFile($result['path'], [ 'download' => true, 'deleteAfterward' => true ]);
+			if ( $streamed === false ) {
+				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
+				return false;
+			}
+		}
 		// done!
 		return $result;
 	}
