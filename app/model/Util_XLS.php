@@ -69,6 +69,11 @@ class Util_XLS {
 		$options['multipleWorksheets'] = $options['multipleWorksheets'] ?? false;
 		$options['showRecordCount'] = $options['showRecordCount'] ?? false;
 		$options['columnWidth'] = $options['columnWidth'] ?? [];
+		// wrap by an extra layer of array (when single worksheet)
+		if ( !$options['multipleWorksheets'] ) {
+			$fileData = array('Untitled' => $fileData);
+			$options['columnWidth'] = array('Untitled' => $options['columnWidth']);
+		}
 		// validate library
 		foreach ( self::$libPath['array2xls'] as $libClass ) {
 			if ( !class_exists($libClass) ) {
@@ -94,7 +99,7 @@ class Util_XLS {
 		$wsIndex = 0;
 		foreach ( $fileData as $worksheetName => $worksheet ) {
 			// show number of records at worksheet name (when necessary)
-			if ( !empty($options['showRecordCount']) and !empty($worksheet) ) {
+			if ( $options['showRecordCount'] and !empty($worksheet) ) {
 				$worksheetName .= ' ('.count($worksheet).')';
 			}
 			// create worksheet
