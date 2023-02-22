@@ -39,8 +39,9 @@ class Util_XLS {
 				</structure>
 				<string name="$filePath" optional="yes" comments="relative path to upload directory; download directly when not specified" />
 				<structure name="$options">
-					<boolean name="showRecordCount" optional="yes" />
-					<structure name="columnWidth" optional="yes">
+					<boolean name="multipleWorksheets" optional="yes" default="false" />
+					<boolean name="showRecordCount" optional="yes" default="false" />
+					<structure name="columnWidth" optional="yes" default="~emptyArray~">
 						<array name="~worksheetName~">
 							<number name="+" />
 						</array>
@@ -60,10 +61,14 @@ class Util_XLS {
 	</fusedoc>
 	*/
 	public static function array2xls($fileData, $filePath=null, $options=[]) {
-		// fix swapped parameters
-		if ( isset($filePath) and is_string($fileData) and is_array($filePath) ) list($fileData, $filePath) = array($filePath, $fileData);
 		// mark start time
 		$startTime = microtime(true);
+		// fix swapped parameters
+		if ( isset($filePath) and is_string($fileData) and is_array($filePath) ) list($fileData, $filePath) = array($filePath, $fileData);
+		// default options
+		$options['multipleWorksheets'] = $options['multipleWorksheets'] ?? false;
+		$options['showRecordCount'] = $options['showRecordCount'] ?? false;
+		$options['columnWidth'] = $options['columnWidth'] ?? [];
 		// validate library
 		foreach ( self::$libPath['array2xls'] as $libClass ) {
 			if ( !class_exists($libClass) ) {
