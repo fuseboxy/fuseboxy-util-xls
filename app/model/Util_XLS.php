@@ -198,4 +198,113 @@ class Util_XLS {
 	}
 
 
+
+
+	/**
+	<fusedoc>
+		<description>
+			convert csv/xls/xlsx to array
+			===> use first row as column name (when necessary)
+			===> use snake-case for column name (e.g. this_is_col_name)
+		</description>
+		<io>
+			<in>
+				<path name="$file" comments="excel file path" />
+				<structure name="$options">
+					<number name="worksheet" default="0" comments="starts from zero" />
+					<number name="startRow" default="1" comments="starts from one" />
+					<boolean name="firstRowAsHeader" default="true" />
+					<boolean name="convertHeaderCase" default="true" />
+				</structure>
+			</in>
+			<out>
+				<array name="~return~">
+					<structure name="+">
+						<string name="~columnName~" />
+					</structure>
+				</array>
+			</out>
+		</io>
+	</fusedoc>
+	*/
+	public static function xls2array($file, $options=[]) {
+		// default options
+		$options['startRow'] = $options['startRow'] ?? 1;
+		$options['worksheet'] = $options['worksheet'] ?? 0;
+		$options['firstRowAsHeader'] = $options['firstRowAsHeader'] ?? true;
+		$options['convertHeaderCase'] = $options['convertHeaderCase'] ?? true;
+		// load library
+		foreach ( self::$libPath['xls2array'] as $path ) {
+			if ( !is_file($path) ) {
+				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] SimpleXLSX library is missing ('.$path.')';
+				return false;
+			}
+			require_once($path);
+		}
+		// validation
+		$fileExt = strtoupper( pathinfo($file, PATHINFO_EXTENSION) );
+		if ( !is_file($file) ) {
+			self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] File not found ('.$file.')';
+			return false;
+		} elseif ( !in_array($fileExt, ['XLSX','XLS','CSV']) ) {
+			self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] File type <strong><em>'.$fileExt.'</em></strong> is not supported';
+			return false;
+		}
+		// parse csv by php
+		if ( $fileExt == 'CSV' ) {
+			$data = file_get_contents($file);
+			$data = mb_convert_encoding($data, 'UTF-8', mb_detect_encoding($data, 'UTF-8, ISO-8859-1', true));
+			$data = array_map('str_getcsv', explode(PHP_EOL, $data));
+		// parse excel by library
+		} else {
+			$data = call_user_func('Simple'.$fileExt.'::parse', $file);
+			if ( $data === false ) {
+				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.call_user_func('Simple'.$fileExt.'::parseError');
+				return false;
+			}
+		}
+		// extract data from specific worksheet (when necessary)
+		if ( method_exists($data, 'rows') ) $data = $data->rows($options['worksheet']);
+		for ( $i=0; $i<($options['startRow']-1); $i++ ) if ( isset($data[$i]) ) unset($data[$i]);
+		$data = array_values($data);
+		// validation
+		// ===> simply return when no data
+		// ===> simply return when no need to apply first row as header
+		if ( empty($data) or !$options['firstRowAsHeader'] ) return $data;
+		// get column name from first row
+		$colNames = $data[0];
+		unset($data[0]);
+		$data = array_values($data);
+		// convert column name into snake case
+		if ( $options['convertHeaderCase'] ) {
+			$colNames = array_map('strtolower', $colNames);
+			foreach ( $colNames as $i => $val ) {
+				$val = strtolower($val);
+				$val = preg_replace( '/[^a-z0-9]/i', ' ', $val);
+				$val = preg_replace('!\s+!', ' ', $val);
+				$val = str_replace(' ', '_', $val);
+				$val = trim($val, '_');
+				$colNames[$i] = $val;
+			}
+		}
+		// go through each row and create new record
+		$result = array();
+		foreach ( $data as $row => $rowData ) {
+			$item = array();
+			foreach ( $colNames as $colIndex => $colName ) {
+				$item[$colName] = isset($rowData[$colIndex]) ? $rowData[$colIndex] : '';
+			}
+			$result[] = $item;
+		}
+		// clean-up data
+		foreach ( $result as $row => $rowData ) {
+			foreach ( $rowData as $col => $val ) {
+				$result[$row][$col] = trim($val);
+			}
+		}
+		// done!
+		return $result;
+	}
+
+
 } // class
