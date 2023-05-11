@@ -133,7 +133,7 @@ class Util_XLS {
 			}
 			// output header
 			if ( !empty($worksheet) ) {
-				$row = $worksheet[0];
+				$row = $worksheet[array_key_first($worksheet)];
 				$colIndex = 0;
 				foreach ( $row as $key => $val ) {
 					$activeSheet->setCellValue($colNames[$colIndex].'1', $key);
