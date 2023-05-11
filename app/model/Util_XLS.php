@@ -86,10 +86,10 @@ class Util_XLS {
 			self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] Invalid data structure for Excel (Array is required)';
 			return false;
 		} elseif ( !empty($fileData) ) {
-			$firstWorksheetKey = array_key_first($fileData);
-			$firstWorksheetData = $fileData[$firstWorksheetKey];
+			$firstWorksheetName = array_key_first($fileData);
+			$firstWorksheetData = $fileData[$firstWorksheetName];
 			if ( !is_array($firstWorksheetData) ) {
-				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] Invalid data structure for Excel (1st level of array is worksheet name, and 2nd level of array is worksheet data)';
+				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] Invalid data structure for Excel (Data of ['.$firstWorksheetName.'] should be an array)';
 				return false;
 			}
 		}
@@ -98,6 +98,8 @@ class Util_XLS {
 		// go through each worksheet
 		$wsIndex = 0;
 		foreach ( $fileData as $worksheetName => $worksheet ) {
+			// fix worksheet index (in case not in sequential index)
+			$worksheet = array_values($worksheet);
 			// show number of records at worksheet name (when necessary)
 			if ( $options['showRecordCount'] and !empty($worksheet) ) {
 				$worksheetName .= ' ('.count($worksheet).')';
@@ -133,9 +135,9 @@ class Util_XLS {
 			}
 			// output header
 			if ( !empty($worksheet) ) {
-				$row = $worksheet[array_key_first($worksheet)];
+				$firstRow = $worksheet[0];
 				$colIndex = 0;
-				foreach ( $row as $key => $val ) {
+				foreach ( $firstRow as $key => $val ) {
 					$activeSheet->setCellValue($colNames[$colIndex].'1', $key);
 					$colIndex++;
 				}
