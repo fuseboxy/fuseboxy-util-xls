@@ -170,7 +170,10 @@ class Util_XLS {
 		// ===> when file path not specified
 		// ===> output to temp file
 		if ( $filePath ) {
-			$result = array('path' => Util::uploadDir($filePath), 'url' => Util::uploadUrl($filePath));
+			$result = array(
+				'path' => Util::uploadDir($filePath),
+				'url' => Util::uploadUrl($filePath),
+			);
 			if ( $result['path'] === false or $result['url'] === false ) {
 				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
 				return false;
@@ -181,7 +184,11 @@ class Util_XLS {
 				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
 				return false;
 			}
-			$result = array('path' => $uuid.'.xls', 'url' => $uuid.'.xls');
+			$result = array('path' => Util::tmpDir($uuid.'.xls'));
+			if ( $result['path'] === false ) {
+				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
+				return false;
+			}
 		}
 		// write to report
 		$writer = new PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
@@ -189,7 +196,10 @@ class Util_XLS {
 		// when file path not specified
 		// ===> download directly
 		if ( !$filePath ) {
-			$streamed = Util::streamFile($result['path'], [ 'download' => true, 'deleteAfterward' => true ]);
+			$streamed = Util::streamFile($result['path'], [
+				'download' => true,
+				'deleteAfterward' => true,
+			]);
 			if ( $streamed === false ) {
 				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
 				return false;
