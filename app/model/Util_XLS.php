@@ -167,12 +167,12 @@ class Util_XLS {
 		// focus first worksheet (when finished)
 		$spreadsheet->setActiveSheetIndex(0);
 		// determine output location
-		// ===> when file path not specified
-		// ===> output to temp file
+		// ===> output to temp file when file path not specified
+		// ===> specify sub-directory in uploadDir() method to create directory automatically
 		if ( $filePath ) {
 			$result = array(
-				'path' => Util::uploadDir($filePath),
-				'url' => Util::uploadUrl($filePath),
+				'path' => Util::uploadDir(dirname($filePath)).basename($filePath),
+				'url' => Util::uploadUrl().$filePath,
 			);
 			if ( $result['path'] === false or $result['url'] === false ) {
 				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
@@ -184,7 +184,7 @@ class Util_XLS {
 				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
 				return false;
 			}
-			$result = array('path' => Util::tmpDir($uuid.'.xls'));
+			$result = array('path' => Util::tmpDir().$uuid.'.xls');
 			if ( $result['path'] === false ) {
 				self::$error = '['.__CLASS__.'::'.__FUNCTION__.'] '.Util::error();
 				return false;
