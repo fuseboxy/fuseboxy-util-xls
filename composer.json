@@ -4,9 +4,13 @@
 	"license": "MIT",
 	"type": "fuseboxy-module",
 	"require": {
-		"fuseboxy/fuseboxy-installer": "2.2.x",
+		"fuseboxy/fuseboxy-installer": "1.*",
 		"phpoffice/phpspreadsheet" : "1.14.*",
 		"psr/log" : "1.1.*"
 	},
-	"autoload": { "files": [ "app/model/Util_XLS.php" ] }
+	"autoload": {
+		"files": [
+			"app/model/Util_XLS.php"
+		]
+	}
 }
