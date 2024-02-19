@@ -1,2 +1,2 @@
-Fuseboxy Util Excel
-===================
+Fuseboxy Util Excel (1.x)
+=========================
